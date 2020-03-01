@@ -68,25 +68,33 @@ class App extends React.Component {
 
   onButtonSubmit = () => {
     this.setState({ imageUrl: this.state.input });
-    app.models.predict(Clarifai.FACE_DETECT_MODEL, this.state.input)
-      .then(response => {
-        if (response) {
-          fetch('http://localhost:3001/rank', {
-            method: 'put',
-            headers: { 'Content-type': 'application/json' },
-            body: JSON.stringify({
-                id: this.state.user.id
-            })
-          })
-          .then(response => response.json())
-          .then(count => {
-            this.setState(Object.assign(this.state.user, { entries: count}))
-          })
-          .catch(console.log);
-        }
-        this.displayFaceBox(this.calculateFaceLocation(response))
+    
+    fetch('http://localhost:3001/rankUrl', {
+      method: 'post',
+      headers: { 'Content-type': 'application/json' },
+      body: JSON.stringify({
+        input: this.state.input
       })
-      .catch(error => console.log(error));
+    })
+    .then(response => response.json())
+    .then(response => {
+      if (response) {
+        fetch('http://localhost:3001/rank', {
+          method: 'put',
+          headers: { 'Content-type': 'application/json' },
+          body: JSON.stringify({
+            id: this.state.user.id
+          })
+        })
+        .then(response => response.json())
+        .then(count => {
+          this.setState(Object.assign(this.state.user, { entries: count}))
+        })
+        .catch(console.log);
+      }
+      this.displayFaceBox(this.calculateFaceLocation(response))
+    })
+    .catch(error => console.log(error));
   }
 
   onRouteChange = (route) => {
